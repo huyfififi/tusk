@@ -5,15 +5,24 @@ import requests
 import sys
 
 
+def get_blocked_users(instance_url, access_token):
+    response = requests.get(
+        url=f"https://{instance_url}/api/v1/blocks?limit=10",
+        headers={"Authorization": f"Bearer {access_token}"},
+        data={},
+    )
+    print(f"{response.status_code=}")
+    pprint.pprint(response.json())
+
+
 def post(instance_url, access_token, body):
     response = requests.post(
         url=f"https://{instance_url}/api/v1/statuses",
         headers={"Authorization": f"Bearer {access_token}"},
         data={"status": body},
     )
-    print(response.status_code)
-    if response.status_code == 200:
-        pprint.pprint(response.json())
+    print(f"{response.status_code=}")
+    pprint.pprint(response.json())
 
 
 def parse(argv=sys.argv):
@@ -21,7 +30,11 @@ def parse(argv=sys.argv):
     usage = "tusk [COMMAND]"
     parser = argparse.ArgumentParser(usage=usage)
 
+    # TODO: Add sub commands ex. tusk block list, tusk post --poll
     parser.add_argument("post", nargs="*", type=str, help="please type strings")
+    parser.add_argument(
+        "blocks", action="store_true", help="get the list of blocked users"
+    )
 
     args = parser.parse_args()
     return args
@@ -40,5 +53,9 @@ def main():
 
     args = parse()
 
-    if args.post:
+    if args.blocks:
+        get_blocked_users(instance_url, access_token)
+
+    # FIXME: args.post = ["block"] if `tusk blocks `
+    elif args.post:
         post(instance_url, access_token, " ".join(args.post[1:]))
