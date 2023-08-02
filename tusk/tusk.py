@@ -5,35 +5,46 @@ import requests
 import sys
 
 
-def get_blocked_users(instance_url, access_token):
+def block(instance_url, access_token, args):
+    if not args.list:
+        # other operations are not supported at the moment.
+        return
     response = requests.get(
         url=f"https://{instance_url}/api/v1/blocks?limit=10",
         headers={"Authorization": f"Bearer {access_token}"},
         data={},
+        timeout=60,
     )
     print(f"{response.status_code=}")
     pprint.pprint(response.json())
 
 
-def post(instance_url, access_token, body):
+def post(instance_url, access_token, body, args):
     response = requests.post(
         url=f"https://{instance_url}/api/v1/statuses",
         headers={"Authorization": f"Bearer {access_token}"},
         data={"status": body},
+        timeout=60,
     )
     print(f"{response.status_code=}")
     pprint.pprint(response.json())
 
 
 def parse(argv=sys.argv):
-
     usage = "tusk [COMMAND]"
     parser = argparse.ArgumentParser(usage=usage)
+    parser.add_argument("-g", "--global")
 
-    # TODO: Add sub commands ex. tusk block list, tusk post --poll
-    parser.add_argument("post", nargs="*", type=str, help="please type strings")
-    parser.add_argument(
-        "blocks", action="store_true", help="get the list of blocked users"
+    subparsers = parser.add_subparsers(dest="subcommand")
+    post_parser = subparsers.add_parser("post")
+    post_parser.add_argument(dest="content", nargs="*", type=str, help="Post strings.")
+
+    block_parser = subparsers.add_parser("block")
+    block_parser.add_argument(
+        "-l",
+        "--list",
+        action="store_true",
+        help="Retrieve the list of blocked users.",
     )
 
     args = parser.parse_args()
@@ -53,9 +64,8 @@ def main():
 
     args = parse()
 
-    if args.blocks:
-        get_blocked_users(instance_url, access_token)
+    if args.subcommand == "block":
+        block(instance_url, access_token, args)
 
-    # FIXME: args.post = ["block"] if `tusk blocks `
-    elif args.post:
-        post(instance_url, access_token, " ".join(args.post[1:]))
+    elif args.subcommand == "post":
+        post(instance_url, access_token, " ".join(args.content), args)
