@@ -5,6 +5,7 @@ import requests
 import sys
 
 
+from .timeline import timeline
 from .utils import filter_dict
 
 
@@ -54,6 +55,8 @@ def parse(argv=sys.argv):
         help="Retrieve the list of blocked users.",
     )
 
+    subparsers.add_parser("timeline")
+
     args = parser.parse_args()
     return args
 
@@ -76,3 +79,6 @@ def main():
 
     elif args.subcommand == "post":
         post(instance_url, access_token, " ".join(args.content), args)
+
+    elif args.subcommand == "timeline":
+        timeline(instance_url, access_token)

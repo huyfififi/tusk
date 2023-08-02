@@ -10,6 +10,6 @@ distutils.core.setup(
     url="https://github.com/huyfififi/tusk",
     packages=setuptools.find_packages(),
     python_requires=">=3.8",
-    install_requires=[],
+    install_requires=["html2text"],
     entry_points={"console_scripts": ["tusk = tusk.tusk:main"]},
 )
