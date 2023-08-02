@@ -5,18 +5,25 @@ import requests
 import sys
 
 
+from .utils import filter_dict
+
+
 def block(instance_url, access_token, args):
     if not args.list:
         # other operations are not supported at the moment.
         return
+
+    DISPLAY_FIELDS = ("acct", "display_name", "note")
+
     response = requests.get(
         url=f"https://{instance_url}/api/v1/blocks?limit=10",
         headers={"Authorization": f"Bearer {access_token}"},
         data={},
         timeout=60,
     )
-    print(f"{response.status_code=}")
-    pprint.pprint(response.json())
+    blocked_users = response.json()
+    for blocked_user in blocked_users:
+        pprint.pprint(filter_dict(blocked_user, keys=DISPLAY_FIELDS), indent=2)
 
 
 def post(instance_url, access_token, body, args):
