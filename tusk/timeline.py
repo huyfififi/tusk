@@ -26,9 +26,10 @@ def timeline(instance_url: str, access_token: str) -> None:
                 if spoiler_text := post["spoiler_text"]:
                     print(f"[spoiler_text]: {spoiler_text}")
                 if post["media_attachments"]:
-                    print(f"[media]: {post['media_attachments']['id']}")
-                h = html2text.HTML2Text()
-                print(h.handle(post["content"]), end="")
+                    print(
+                        f"[media]: {[media['id'] for media in post['media_attachments']]}"
+                    )
+                print(html2text.html2text(post["content"]), end="")
                 since_id = post["id"]
 
             time.sleep(REFRESH_RATE)

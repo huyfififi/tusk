@@ -4,7 +4,9 @@ import pprint
 import requests
 import sys
 
+import html2text
 
+from .favorite import favorite
 from .timeline import timeline
 from .utils import filter_dict
 
@@ -34,8 +36,11 @@ def post(instance_url, access_token, body, args):
         data={"status": body},
         timeout=60,
     )
-    print(f"{response.status_code=}")
-    pprint.pprint(response.json())
+    response_data = response.json()
+    print("Successfully posted the status.")
+    print(response_data["id"])
+    print(response_data["account"]["display_name"])
+    print(html2text.html2text(response_data["content"]), end="")
 
 
 def parse(argv=sys.argv):
@@ -56,6 +61,11 @@ def parse(argv=sys.argv):
     )
 
     subparsers.add_parser("timeline")
+
+    favorite_parser = subparsers.add_parser("favorite")
+    favorite_parser.add_argument(
+        dest="status_id", nargs="?", type=str, help="Favorite a status."
+    )
 
     args = parser.parse_args()
     return args
@@ -82,3 +92,6 @@ def main():
 
     elif args.subcommand == "timeline":
         timeline(instance_url, access_token)
+
+    elif args.subcommand == "favorite":
+        favorite(instance_url, access_token, args.status_id)
