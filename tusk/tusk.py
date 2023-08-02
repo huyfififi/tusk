@@ -4,9 +4,7 @@ import pprint
 import requests
 import sys
 
-import html2text
-
-from .favorite import favorite
+from .statuses import post, favorite, delete
 from .timeline import timeline
 from .utils import filter_dict
 
@@ -27,20 +25,6 @@ def block(instance_url, access_token, args):
     blocked_users = response.json()
     for blocked_user in blocked_users:
         pprint.pprint(filter_dict(blocked_user, keys=DISPLAY_FIELDS), indent=2)
-
-
-def post(instance_url, access_token, body, args):
-    response = requests.post(
-        url=f"https://{instance_url}/api/v1/statuses",
-        headers={"Authorization": f"Bearer {access_token}"},
-        data={"status": body},
-        timeout=60,
-    )
-    response_data = response.json()
-    print("Successfully posted the status.")
-    print(response_data["id"])
-    print(response_data["account"]["display_name"])
-    print(html2text.html2text(response_data["content"]), end="")
 
 
 def parse(argv=sys.argv):
@@ -65,6 +49,11 @@ def parse(argv=sys.argv):
     favorite_parser = subparsers.add_parser("favorite")
     favorite_parser.add_argument(
         dest="status_id", nargs="?", type=str, help="Favorite a status."
+    )
+
+    delete_parser = subparsers.add_parser("delete")
+    delete_parser.add_argument(
+        dest="status_id", nargs="?", type=str, help="Delete a status."
     )
 
     args = parser.parse_args()
@@ -95,3 +84,6 @@ def main():
 
     elif args.subcommand == "favorite":
         favorite(instance_url, access_token, args.status_id)
+
+    elif args.subcommand == "delete":
+        delete(instance_url, access_token, args.status_id)
