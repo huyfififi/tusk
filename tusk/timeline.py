@@ -2,7 +2,7 @@ import time
 import html2text
 import requests
 
-from .constants import REFRESH_RATE
+from .constants import TIMELINE_REFRESH_RATE
 
 
 def timeline(instance_url: str, access_token: str) -> None:
@@ -32,7 +32,7 @@ def timeline(instance_url: str, access_token: str) -> None:
                 print(html2text.html2text(post["content"]), end="")
                 since_id = post["id"]
 
-            time.sleep(REFRESH_RATE)
+            time.sleep(TIMELINE_REFRESH_RATE)
 
         else:
             print(f"{response.status_code=}")

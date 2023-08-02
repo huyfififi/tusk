@@ -6,6 +6,7 @@ import sys
 
 from .statuses import post, favorite, delete
 from .timeline import timeline
+from .notifications import notifications
 from .utils import filter_dict
 
 
@@ -56,6 +57,8 @@ def parse(argv=sys.argv):
         dest="status_id", nargs="?", type=str, help="Delete a status."
     )
 
+    subparsers.add_parser("notifications")
+
     args = parser.parse_args()
     return args
 
@@ -87,3 +90,6 @@ def main():
 
     elif args.subcommand == "delete":
         delete(instance_url, access_token, args.status_id)
+
+    elif args.subcommand == "notifications":
+        notifications(instance_url, access_token)
