@@ -4,7 +4,7 @@ import pprint
 import requests
 import sys
 import time
-from typing import List
+from typing import List, Optional
 
 import html2text
 
@@ -27,6 +27,7 @@ class Endpoint:
     NOTIFICATIONS = "api/v1/notifications"
     STATUSES = "api/v1/statuses"
     TIMELINE_HOME = "api/v1/timelines/home"
+    ACCOUNTS = "api/v1/accounts"
 
 
 class Handler:
@@ -57,7 +58,11 @@ class Handler:
             )
             blocked_users = response.json()
             for blocked_user in blocked_users:
-                pprint.pprint(filter_dict(blocked_user, DISPLAY_FIELDS), indent=2)
+                print("\n")
+                blocked_user["note"] = html2text.html2text(
+                    blocked_user["note"]
+                )  # TODO: Refactor
+                pprint.pprint(filter_dict(blocked_user, DISPLAY_FIELDS))
 
         if args.list:
             list_blocked_users()
@@ -181,6 +186,79 @@ class Handler:
                 print(f"{response.status_code=}")
                 print(f"{response.text=}")
 
+    def whoami(self) -> None:
+        response = requests.get(
+            url=f"https://{self.domain}/{Endpoint.ACCOUNTS}/verify_credentials",
+            headers=self.headers,
+            timeout=60,
+        )
+        response_data = response.json()
+        if response.status_code == 200:
+            pprint.pprint(response_data)
+        else:  # 401, 403, or 429
+            print(response.status_code)
+            print(response_data)
+
+    def get_my_id(self) -> Optional[str]:
+        response = requests.get(
+            url=f"https://{self.domain}/{Endpoint.ACCOUNTS}/verify_credentials",
+            headers=self.headers,
+            timeout=60,
+        )
+        response_data = response.json()
+        if response.status_code == 200:
+            return response_data["id"]
+        else:  # 401, 403, or 429
+            print(response.status_code)
+            print(response_data)
+            return None
+
+    def following(self) -> None:
+        my_id = self.get_my_id()
+        if not my_id:
+            return
+
+        # TODO: Support pagination
+        # This command only shows 40 users maximum
+        response = requests.get(
+            url=f"https://{self.domain}/{Endpoint.ACCOUNTS}/{my_id}/following",
+            headers=self.headers,
+            timeout=60,
+        )
+        response_data = response.json()
+        if response.status_code == 200:
+            DISPLAY_FIELDS = ("id", "acct", "display_name", "note")
+            for user in response_data:
+                print("\n")
+                user["note"] = html2text.html2text(user["note"])  # TODO: Refactor
+                pprint.pprint(filter_dict(user, DISPLAY_FIELDS))
+        else:  # 401, 404, or 410
+            print(response.status_code)
+            print(response_data)
+
+    def followers(self) -> None:
+        my_id = self.get_my_id()
+        if not my_id:
+            return
+
+        # TODO: Support pagination
+        # This command only shows 40 users maximum
+        response = requests.get(
+            url=f"https://{self.domain}/{Endpoint.ACCOUNTS}/{my_id}/followers",
+            headers=self.headers,
+            timeout=60,
+        )
+        response_data = response.json()
+        if response.status_code == 200:
+            DISPLAY_FIELDS = ("id", "acct", "display_name", "note")
+            for user in response_data:
+                print("\n")
+                user["note"] = html2text.html2text(user["note"])  # TODO: Refactor
+                pprint.pprint(filter_dict(user, DISPLAY_FIELDS))
+        else:  # 401, 404, or 410
+            print(response.status_code)
+            print(response_data)
+
 
 def parse(argv=sys.argv):
     usage = "tusk [COMMAND]"
@@ -212,6 +290,9 @@ def parse(argv=sys.argv):
     )
 
     subparsers.add_parser("notifications")
+    subparsers.add_parser("whoami")
+    subparsers.add_parser("following")
+    subparsers.add_parser("followers")
 
     args = parser.parse_args()
     return args
@@ -238,5 +319,15 @@ def main():
 
         elif args.subcommand == "timeline":
             handler.timeline()
+
+        elif args.subcommand == "whoami":
+            handler.whoami()
+
+        elif args.subcommand == "following":
+            handler.following()
+
+        elif args.subcommand == "followers":
+            handler.followers()
+
     except KeyboardInterrupt:
         print("Exitting Tusk... /(-TT-)\\")
