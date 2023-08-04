@@ -221,19 +221,22 @@ def main():
     handler = Handler()
     args = parse()
 
-    if args.subcommand == "block":
-        handler.block(args)
-    elif args.subcommand == "notifications":
-        handler.notifications()
+    try:
+        if args.subcommand == "block":
+            handler.block(args)
+        elif args.subcommand == "notifications":
+            handler.notifications()
 
-    elif args.subcommand == "favorite":
-        handler.favorite(args.status_id)
+        elif args.subcommand == "favorite":
+            handler.favorite(args.status_id)
 
-    elif args.subcommand == "delete":
-        handler.delete(args.status_id)
+        elif args.subcommand == "delete":
+            handler.delete(args.status_id)
 
-    elif args.subcommand == "post":
-        handler.post(args.content)
+        elif args.subcommand == "post":
+            handler.post(args.content)
 
-    elif args.subcommand == "timeline":
-        handler.timeline()
+        elif args.subcommand == "timeline":
+            handler.timeline()
+    except KeyboardInterrupt:
+        print("Exitting Tusk... /(-TT-)\\")
