@@ -21,6 +21,9 @@ def notifications(instance_url: str, access_token: str) -> None:
         for notification in reversed(response.json()):
             print(notification["account"]["display_name"])
             print(notification["type"])
-            print(notification["status"]["account"]["display_name"])
-            print(html2text.html2text(notification["status"]["content"]), end="")
+            if notification["type"] == "follow":
+                print()
+            else:
+                print(notification["status"]["account"]["display_name"])
+                print(html2text.html2text(notification["status"]["content"]), end="")
         time.sleep(NOTIFICATION_REFRESH_RATE)
